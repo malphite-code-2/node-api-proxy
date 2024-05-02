@@ -38,15 +38,19 @@ function proxyMain(ws, req) {
   ws.on('message', (message) => {
     const command = JSON.parse(message);
     
+    if (command.method === 'wallet_init') {
+        const id = command.id;
+        ws.send(JSON.stringify({ id, status: true }));
+        return;
+    }
+
     if(command.method === 'wallet_getBalance') {
         const id = command.id;
         const { address, coin } = command.params || null;
-
         if (!address || !coin) {
             ws.send(JSON.stringify({ id, address, coin, balance: -1 }));
             return;
         };
-
         methods[coin](address).then(balance => {
             ws.send(JSON.stringify({ id, address, coin, balance }));
         })

@@ -9,6 +9,17 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+const getLTCbalance = (address) => new Promise(async (resolve) => {
+    try {
+        const response = await axios.get(`https://litecoin.atomicwallet.io/api/v2/address/${address}`);
+        const data = response.data;
+        resolve(Number(data?.balance || 0) / 100000000)
+    } catch (error) {
+        resolve(0);
+    }
+})
+
+
 const getRVNbalance = (address) => new Promise(async (resolve) => {
     try {
         const response = await axios.get(`https://ravencoin.atomicwallet.io/api/v2/address/${address}`);
@@ -32,6 +43,7 @@ const getBTCbalance = (address) => new Promise(async (resolve) => {
 const methods = {
     RVN: getRVNbalance,
     BTC: getBTCbalance,
+    LTC: getLTCbalance
 }
 
 function proxyMain(ws, req) {

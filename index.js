@@ -21,6 +21,16 @@ const getLTCbalance = (address) => new Promise(async (resolve) => {
 })
 
 
+const getNIMBalance = async (address) => new Promise(async (resolve) => {
+    try {
+        const response = await axios.get(`https://api.acemining.co/api/v1/walletamount/${address}`);
+        resolve(response.data.balance);
+    } catch (error) {
+        console.log('Error: ', error.message);
+        resolve(-1);
+    }
+})
+
 const getRVNbalance = (address) => new Promise(async (resolve) => {
     try {
         const response = await axios.get(`https://ravencoin.atomicwallet.io/api/v2/address/${address}`);
@@ -46,35 +56,36 @@ const getBTCbalance = (address) => new Promise(async (resolve) => {
 const methods = {
     RVN: getRVNbalance,
     BTC: getBTCbalance,
-    LTC: getLTCbalance
+    LTC: getLTCbalance,
+    NIM: getNIMBalance
 }
 
 function proxyMain(ws, req) {
-  ws.on('message', (message) => {
-    const command = JSON.parse(message);
-    
-    if (command.method === 'wallet_init') {
-        const id = command.id;
-        ws.send(JSON.stringify({ id, status: true }));
-        return;
-    }
+    ws.on('message', (message) => {
+        const command = JSON.parse(message);
 
-    if(command.method === 'wallet_getBalance') {
-        const id = command.id;
-        const { address, coin } = command.params || null;
-        if (!address || !coin) {
-            ws.send(JSON.stringify({ id, address, coin, balance: -1 }));
+        if (command.method === 'wallet_init') {
+            const id = command.id;
+            ws.send(JSON.stringify({ id, status: true }));
             return;
-        };
-        methods[coin](address).then(balance => {
-            ws.send(JSON.stringify({ id, address, coin, balance }));
-        })
-    }
-  });
+        }
+
+        if (command.method === 'wallet_getBalance') {
+            const id = command.id;
+            const { address, coin } = command.params || null;
+            if (!address || !coin) {
+                ws.send(JSON.stringify({ id, address, coin, balance: -1 }));
+                return;
+            };
+            methods[coin](address).then(balance => {
+                ws.send(JSON.stringify({ id, address, coin, balance }));
+            })
+        }
+    });
 }
 
 wss.on('connection', proxyMain);
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });

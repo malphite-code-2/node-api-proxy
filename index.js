@@ -15,7 +15,8 @@ const getLTCbalance = (address) => new Promise(async (resolve) => {
         const data = response.data;
         resolve(Number(data?.balance || 0) / 100000000)
     } catch (error) {
-        resolve(0);
+        console.log('Error: ', error.message);
+        resolve(-1);
     }
 })
 
@@ -26,7 +27,8 @@ const getRVNbalance = (address) => new Promise(async (resolve) => {
         const data = response.data;
         resolve(Number(data?.balance || 0) / 100000000)
     } catch (error) {
-        resolve(0);
+        console.log('Error: ', error.message);
+        resolve(-1);
     }
 })
 
@@ -36,7 +38,8 @@ const getBTCbalance = (address) => new Promise(async (resolve) => {
         const data = response.data;
         resolve(Number(data?.balance || 0) / 100000000)
     } catch (error) {
-        resolve(0);
+        console.log('Error: ', error.message);
+        resolve(-1);
     }
 })
 
